@@ -1,0 +1,26 @@
+name: Auto Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy
+      uses: appleboy/ssh-action@v1
+      with:
+        host: 127.0.0.1
+        username: YOUR_UBUNTU_USERNAME
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd devops-demo
+          git pull
+          docker build -t devops-demo .
+          docker stop web || true
+          docker rm web || true
+          docker run -d --name web -p 80:3000 devops-demo
